@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const api = require('./api');
 
 const app = express();
-const PORT = 8080;
+const PORT = 3000;
 
 //----------|| view engine
 const configViewEngine = (app) => {

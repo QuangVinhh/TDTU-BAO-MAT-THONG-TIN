@@ -69,18 +69,45 @@ const cryptFileAES = async (file, secretKey) => {
 
     const data = fs.readFileSync(file, 'utf8')
 
-    let newFile = file + "_Encrypt" + ".txt"
-
     const cipher = crypto.createCipheriv(algorithm, secretKey, iv);
 
     const encrypted = Buffer.concat([cipher.update(data), cipher.final()]);
 
+    //---------->>>
+    const encrypt = (text) => {
+
+        const cipher = crypto.createCipheriv(algorithm, secretKey, iv);
+
+        const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
+
+        return {
+            iv: iv.toString('hex'),
+            content: encrypted.toString('hex')
+        };
+    };
+
+    let hash = encrypt(data)
+
+    const decipher = crypto.createDecipheriv(algorithm, secretKey, Buffer.from(hash.iv, 'hex'));
+
+    const decrpyted = Buffer.concat([decipher.update(Buffer.from(hash.content, 'hex')), decipher.final()]);
+
+    //---------->>>
+
+    let newFile = file + "_Encrypt";
+
+    let decrypFile = file + "_Decrypt";
+
     let fileEncypt = encrypted.toString('hex');
 
-    fs.writeFileSync('encrypt_Output.txt', fileEncypt)
+    let fileDecrypt = decrpyted.toString();
+
+    fs.writeFileSync(newFile + ".txt", fileEncypt)
+
+    fs.writeFileSync(decrypFile + ".txt", fileDecrypt)
 
     try {
-        const [rows, fields] = await connection.execute('INSERT INTO aes (content, encrypt, decrypt) VALUES (?,?,?)', [file, newFile, "Success!"]);
+        const [rows, fields] = await connection.execute('INSERT INTO aes (content, encrypt, decrypt) VALUES (?,?,?)', [file, newFile, decrypFile]);
     } catch (err) {
         console.log(">>> Check Error Crypt File AES :", err)
     }
